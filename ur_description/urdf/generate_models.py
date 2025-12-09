@@ -148,18 +148,19 @@ def replace_motor_in_inertial(
 def add_motor_actuator(actuator_root: etree._Element,
                        joint_name: str,
                        hd: HarmonicDrive) -> None:
-    """
-    Добавляет general-актуатор с ограничением по моменту:
-      ctrlrange = ± Maximum Torque из каталога SHA-SG.
-    """
+
     motor_name = f"{joint_name}_motor_{hd.name}"
-    T_max = hd.max_torque  # N·m
+
+    N = hd.gear_ratio            
+    T_joint_max = hd.max_torque  
+    T_motor_max = T_joint_max / N
 
     motor_el = etree.SubElement(actuator_root, "general")
     motor_el.set("name", motor_name)
     motor_el.set("joint", joint_name)
-    motor_el.set("gear", "1.0")  # управляющий сигнал = момент в суставе
-    motor_el.set("ctrlrange", f"{-T_max:.3f} {T_max:.3f}")
+    motor_el.set("gear", f"{N:.1f}") 
+    motor_el.set("ctrlrange", f"{-T_motor_max:.6f} {T_motor_max:.6f}")
+
 
 def replace_motor_in_inertial_ur3(
     inertial_el: etree._Element,
